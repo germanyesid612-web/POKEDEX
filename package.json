@@ -1,0 +1,12 @@
+{
+  "name": "pokedex",
+  "version": "1.0.0",
+  "description": "Pokédex interactiva con audio de gritos oficiales, diseño clásico de Pokédex, estadísticas, evoluciones y catálogo completo.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["pokemon", "pokedex", "audio", "retro"],
+  "author": "Antigravity",
+  "license": "MIT"
+}

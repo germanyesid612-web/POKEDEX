@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex Database - Enciclopedia de Pokémon</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230f172a' stroke='%2338bdf8' stroke-width='6'/><circle cx='50' cy='50' r='20' fill='%2338bdf8'/><path d='M10 50h80' stroke='%2338bdf8' stroke-width='6'/></svg>">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Barra de navegación superior -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <span class="logo-ball"></span>
+        </div>
+        <div>
+          <h1 class="brand-title">POKÉDEX <span>DATABASE</span></h1>
+          <p class="brand-subtitle">Enciclopedia Nacional de Pokémon</p>
+        </div>
+      </div>
+
+      <!-- Buscador en tiempo real -->
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Buscar por #004 o Charmander..." 
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button class="clear-btn" id="clearSearchBtn" title="Limpiar">✕</button>
+      </div>
+
+      <!-- Acciones de cabecera -->
+      <div class="header-actions">
+        <button class="action-btn" id="btnRandom" title="Seleccionar Pokémon Aleatorio">
+          <span>🎲</span>
+          <span class="btn-text">Aleatorio</span>
+        </button>
+        <button class="action-btn" id="btnSoundToggle" title="Activar / Desactivar Sonido">
+          <span id="soundIcon">🔊</span>
+          <span class="btn-text" id="soundText">Sonido</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de filtros rápidos -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label for="genFilter">Generación:</label>
+        <select id="genFilter" class="filter-select">
+          <option value="all">Todas las Generaciones (Gen 1 - 9)</option>
+          <option value="gen1">Gen 1: Kanto (#001 - #151)</option>
+          <option value="gen2">Gen 2: Johto (#152 - #251)</option>
+          <option value="gen3">Gen 3: Hoenn (#252 - #386)</option>
+          <option value="gen4">Gen 4: Sinnoh (#387 - #493)</option>
+          <option value="gen5">Gen 5: Unova (#494 - #649)</option>
+          <option value="gen6">Gen 6: Kalos (#650 - #721)</option>
+          <option value="gen7">Gen 7: Alola (#722 - #809)</option>
+          <option value="gen8">Gen 8: Galar (#810 - #905)</option>
+          <option value="gen9">Gen 9: Paldea (#906 - #1025)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="typeFilter">Elemento / Tipo:</label>
+        <select id="typeFilter" class="filter-select">
+          <option value="all">Todos los Tipos</option>
+          <option value="normal">Normal</option>
+          <option value="fire">Fuego</option>
+          <option value="water">Agua</option>
+          <option value="grass">Planta</option>
+          <option value="electric">Eléctrico</option>
+          <option value="ice">Hielo</option>
+          <option value="fighting">Lucha</option>
+          <option value="poison">Veneno</option>
+          <option value="ground">Tierra</option>
+          <option value="flying">Volador</option>
+          <option value="psychic">Psíquico</option>
+          <option value="bug">Bicho</option>
+          <option value="rock">Roca</option>
+          <option value="ghost">Fantasma</option>
+          <option value="dragon">Dragón</option>
+          <option value="steel">Acero</option>
+          <option value="dark">Siniestro</option>
+          <option value="fairy">Hada</option>
+        </select>
+      </div>
+
+      <div class="results-stats">
+        <span id="resultsCount">Cargando catálogo...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Maestro-Detalle (Layout de Lista + Inspector) -->
+  <div class="dashboard-layout">
+
+    <!-- =================================================== -->
+    <!-- COLUMNA 1: LA GRAN LISTA DE POKÉMON -->
+    <!-- =================================================== -->
+    <main class="list-column">
+      <!-- Encabezado de columnas de la lista -->
+      <div class="list-table-header">
+        <span class="col-num">N°</span>
+        <span class="col-poke">POKÉMON</span>
+        <span class="col-types">ELEMENTOS</span>
+        <span class="col-stats">ESTADÍSTICAS RÁPIDAS</span>
+        <span class="col-action">AUDIO</span>
+      </div>
+
+      <!-- Filas de la lista generadas dinámicamente -->
+      <div class="pokemon-list-rows" id="pokemonListRows">
+        <div class="list-placeholder-loading">
+          <div class="loading-spin"></div>
+          <p>Cargando base de datos de Pokémon...</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- =================================================== -->
+    <!-- COLUMNA 2: PANEL INSPECTOR DETALLADO (STICKY) -->
+    <!-- =================================================== -->
+    <aside class="inspector-column">
+      <div class="inspector-card" id="inspectorCard">
+        
+        <!-- Cabecera del Inspector -->
+        <div class="inspector-header">
+          <div class="inspector-id-tag" id="detailId">#004</div>
+          <div class="inspector-actions">
+            <button class="shiny-btn" id="btnShiny" title="Alternar versión variocolor (Shiny)">
+              ★ Shiny
+            </button>
+            <button class="cry-play-btn" id="btnPlayCry" title="Reproducir Grito Oficial">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+              <span>GRITO</span>
+              <div class="sound-wave-bars" id="inspectorSoundWave">
+                <span></span><span></span><span></span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ilustración y Visualizador Principal -->
+        <div class="inspector-visual">
+          <div class="artwork-halo" id="artworkHalo"></div>
+          <img id="detailImg" class="detail-artwork" src="" alt="Ilustración Pokémon">
+          <div class="detail-spinner" id="detailSpinner">
+            <div class="loading-spin"></div>
+          </div>
+        </div>
+
+        <!-- Nombre y Elementos -->
+        <div class="inspector-identity">
+          <h2 class="detail-name" id="detailName">CHARMANDER</h2>
+          <div class="detail-types" id="detailTypes">
+            <!-- Badges de tipos -->
+          </div>
+        </div>
+
+        <!-- Pestañas del Inspector -->
+        <div class="inspector-tabs">
+          <button class="tab-btn active" data-tab="stats" id="tabStats">Estadísticas</button>
+          <button class="tab-btn" data-tab="evolutions" id="tabEvolutions">Evolución</button>
+          <button class="tab-btn" data-tab="info" id="tabInfo">Detalles</button>
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div class="inspector-body">
+
+          <!-- Sección Estadísticas Base -->
+          <div class="tab-content active" id="contentStats">
+            <div class="bst-row">
+              <span class="bst-label">Total de Estadísticas (BST)</span>
+              <span class="bst-score" id="detailBst">--</span>
+            </div>
+            <div class="stats-bars-container" id="detailStatsList">
+              <!-- Barras dinámicas de stats -->
+            </div>
+          </div>
+
+          <!-- Sección Cadena Evolutiva -->
+          <div class="tab-content" id="contentEvolutions">
+            <div class="evolution-flow" id="detailEvolutionFlow">
+              <!-- Nodos de evolución -->
+            </div>
+          </div>
+
+          <!-- Sección Información de Especie -->
+          <div class="tab-content" id="contentInfo">
+            <div class="pokedex-entry-card">
+              <p class="flavor-quote" id="detailFlavor">Cargando registro oficial...</p>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-box">
+                <span class="m-label">Altura</span>
+                <span class="m-value" id="detailHeight">0.6 m</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Peso</span>
+                <span class="m-value" id="detailWeight">8.5 kg</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Categoría</span>
+                <span class="m-value" id="detailCategory">--</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Habilidades</span>
+                <span class="m-value" id="detailAbilities">--</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Barra de navegación rápida anterior / siguiente -->
+        <div class="inspector-nav-footer">
+          <button class="nav-arrow-btn" id="btnNavPrev" title="Pokémon Anterior">
+            ← Anterior
+          </button>
+          <span class="nav-current-badge" id="navIndicator">#004</span>
+          <button class="nav-arrow-btn" id="btnNavNext" title="Pokémon Siguiente">
+            Siguiente →
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
